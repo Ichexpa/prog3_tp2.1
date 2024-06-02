@@ -1,5 +1,40 @@
-class Sensor {}
+class Sensor {
 
+    id;
+    name;
+    type;
+    value;
+    unit;
+    update_at
+
+    constructor(id, name, type, value, unit, updated_at){
+        this.id = id;
+        this.name = name;
+        this.type = this.#validarType(type);
+        this.value = value;
+        this.unit = unit;
+        this.update_at = updated_at;
+    }
+
+    #validarType(type){
+        if(type != "temperature" && type != "pressure" && type != "humidity"){
+            return undefined;
+        }
+        return type;
+    }
+
+    set updateValue(value){
+        this.value = value;
+        this.#updateUpdate_At();
+        
+    }
+    #updateUpdate_At(){
+        let hora = new Date()
+        hora.setUTCHours(hora.getUTCHours()-3);
+        this.update_at = hora;
+    }
+}
+    
 class SensorManager {
     constructor() {
         this.sensors = [];
@@ -33,7 +68,20 @@ class SensorManager {
         }
     }
 
-    async loadSensors(url) {}
+    async loadSensors(url) {
+
+        try{            
+            //Debido a un problema de CORS tuve que ejecutar el codigo en un servidor local
+            let sensoresPeticion = await fetch(url);
+            let sensoresLista = await sensoresPeticion.json();
+            sensoresLista.forEach(sensor=>this.addSensor(sensor));
+            this.render();
+        }
+        catch(error){
+            console.log(error);
+        }
+
+    }
 
     render() {
         const container = document.getElementById("sensor-container");
