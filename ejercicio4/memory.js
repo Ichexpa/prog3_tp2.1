@@ -31,6 +31,27 @@ class Card {
         const cardElement = this.element.querySelector(".card");
         cardElement.classList.remove("flipped");
     }
+
+    toggleFlip(){
+        if(!this.isFlipped){
+            this.#flip();
+            this.isFlipped=true;
+        }
+        else{
+            this.#unflip();
+            this.isFlipped=true;
+        }
+        
+    }
+    matches(otherCard){
+        return otherCard.name == this.name && otherCard.img == this.img;
+    }
+
+    changeFlipStatus(){
+        this.isFlipped  = !this.isFlipped;
+    }
+
+
 }
 
 class Board {
@@ -74,11 +95,46 @@ class Board {
             this.onCardClick(card);
         }
     }
+    
+    #cargarIndicesAleatorios(){
+       let setIndicesAleatorios = new Set();
+       let indice;
+       while(setIndicesAleatorios.size < 12){
+        indice = Math.floor(Math.random() * (11 - 0 + 1)) + 0;
+        setIndicesAleatorios.add(indice);
+       }
+       return setIndicesAleatorios;
+    }
+
+    shuffleCards(){
+        const indicesAleatorios = this.#cargarIndicesAleatorios();
+        console.log(indicesAleatorios)
+        const arrayAuxiliar = new Array();
+        indicesAleatorios.forEach(indices =>{
+            arrayAuxiliar.push(this.cards[indices]); 
+        })
+        this.cards = arrayAuxiliar;
+    }
+
+    reset(){
+        this.shuffleCards();
+        this.render();
+    }
+    flipDownAllCards(){
+        this.cards.forEach(carta=>{
+            if(carta.isFlipped){
+                carta.toggleFlip();
+                carta.changeFlipStatus();
+            }
+        })
+    }
+
 }
 
 class MemoryGame {
     constructor(board, flipDuration = 500) {
         this.board = board;
+        console.log(board)
         this.flippedCards = [];
         this.matchedCards = [];
         if (flipDuration < 350 || isNaN(flipDuration) || flipDuration > 3000) {
@@ -102,6 +158,27 @@ class MemoryGame {
             }
         }
     }
+    checkForMatch(){
+        const carta1 = this.flippedCards[0];
+        const carta2 = this.flippedCards[1];
+        if(carta1.matches(carta2)){
+            this.matchedCards.push(carta1,carta2);
+            console.log(this.matchedCards)
+        }
+        else{
+            carta1.toggleFlip();
+            carta2.toggleFlip();
+            carta1.changeFlipStatus();
+            carta2.changeFlipStatus();
+        }
+        this.flippedCards = [];
+        
+    }
+    resetGame(){
+        this.board.flipDownAllCards();
+        this.board.reset();
+        this.matchedCards = [];
+    }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -119,6 +196,7 @@ document.addEventListener("DOMContentLoaded", () => {
         new Card(data.name, data.img),
     ]);
     const board = new Board(cards);
+
     const memoryGame = new MemoryGame(board, 1000);
 
     document.getElementById("restart-button").addEventListener("click", () => {
