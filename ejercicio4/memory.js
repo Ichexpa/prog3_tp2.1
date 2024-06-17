@@ -133,6 +133,7 @@ class Board {
 
 class MemoryGame {
     constructor(board, flipDuration = 500) {
+        this.intentos = 0;
         this.board = board;
         console.log(board)
         this.flippedCards = [];
@@ -155,15 +156,26 @@ class MemoryGame {
 
             if (this.flippedCards.length === 2) {
                 setTimeout(() => this.checkForMatch(), this.flipDuration);
+
             }
         }
     }
+    
+    #contarMovimientos(){
+        this.intentos += 1;
+        console.log(this.intentos)
+        if(this.matchedCards.length == 12){
+            alert(`Ganaste el juego con ${this.intentos} intentos`);
+        }
+    }
+
     checkForMatch(){
         const carta1 = this.flippedCards[0];
         const carta2 = this.flippedCards[1];
         if(carta1.matches(carta2)){
             this.matchedCards.push(carta1,carta2);
             console.log(this.matchedCards)
+            
         }
         else{
             carta1.toggleFlip();
@@ -171,6 +183,7 @@ class MemoryGame {
             carta1.changeFlipStatus();
             carta2.changeFlipStatus();
         }
+        this.#contarMovimientos();
         this.flippedCards = [];
         
     }
@@ -178,6 +191,7 @@ class MemoryGame {
         this.board.flipDownAllCards();
         this.board.reset();
         this.matchedCards = [];
+        this.intentos = 0;
     }
 }
 
